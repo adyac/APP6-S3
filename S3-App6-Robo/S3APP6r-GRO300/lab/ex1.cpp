@@ -22,6 +22,8 @@ void accum(int d, int f)
     for (int i = d; i <= f; ++i) 
     {
     	var= var+i; // Cela permet a chaque thread de run la fonction accum() en même temps et de stocker leur nombre dans var. 
+         // Chaque thread ajoute à sa propre "var", car var est une variable locale (une var utilisée que pour concevoir la fonction). 
+         // Somme_ est une var partagée
     } 
     std::lock_guard<std::mutex> guard(m);
     somme_ = somme_ +  var; //A la fin, on additionne les nombres stockés dans chaque var a somme_.
