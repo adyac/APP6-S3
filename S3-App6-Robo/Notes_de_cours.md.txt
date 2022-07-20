@@ -12,7 +12,12 @@
 }
  
 
-That was easy. But what's about the opening and closing brackets? The lifetime of std::lock_guard is limited by the brackets (http://en.cppreference.com/w/cpp/language/scope#Block_scope). That means, its lifetime ends when it leaves the critical section. Exactly at that time point, the destructor of std::lock_guard is called, and - I guess, you know it - the mutex is released. It happens automatically, and, in addition, it  happens if  getVar() in sharedVariable = getVar() throws an exception. Of course, function body scope or loop scope also limit the lifetime of an object.
+That was easy. But what's about the opening and closing brackets? 
+The lifetime of std::lock_guard is limited by the brackets (http://en.cppreference.com/w/cpp/language/scope#Block_scope). 
+That means, its lifetime ends when it leaves the critical section. Exactly at that time point, 
+the destructor of std::lock_guard is called, and - I guess, you know it - the mutex is released. 
+It happens automatically, and, in addition, it  happens if  getVar() in sharedVariable = getVar() throws an exception. 
+Of course, function body scope or loop scope also limit the lifetime of an object.
 
 std::unique_lock
 std::unique_lock is mightier but more expansive than its small brother std::lock_guard.
