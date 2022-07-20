@@ -16,7 +16,7 @@ namespace {
 
 void accum(int d, int f)
 {
-    int var; // On se crée une variable intermédiaire, car on ne veut pas stocker l'information dans somme_. Si on essaye de stocker l'information dans somme_ avec lock_guard, les threads ne vont plus run en parallel. Ils vont attendre que les threads précédents aient fini de mettre leur nombre dans la somme avant de contribuer a leur tour. 
+    int var = 0; // On se crée une variable intermédiaire, car on ne veut pas stocker l'information dans somme_. Si on essaye de stocker l'information dans somme_ avec lock_guard, les threads ne vont plus run en parallel. Ils vont attendre que les threads précédents aient fini de mettre leur nombre dans la somme avant de contribuer a leur tour. 
     
     // Ajoute les nombres de d à f (inclusivement) à la variable somme_ (* a la variable var)
     for (int i = d; i <= f; ++i) 
@@ -24,11 +24,9 @@ void accum(int d, int f)
     	var= var+i; // Cela permet a chaque thread de run la fonction accum() en même temps et de stocker leur nombre dans var. 
          // Chaque thread ajoute à sa propre "var", car var est une variable locale (une var utilisée que pour concevoir la fonction). 
          // Somme_ est une var partagée
-         //On utilise un lock_guard car on veut que les threads ajoutent chacun son tour, et non en parallèle.
-        // unique lock ne lock pas le mutex immediatement, alors les fils accum peuvent ajouter a la somme en parallele 
-         //Lock guard va alors "barrer" la possiblité de partage de somme_ entre les fils. Ils vont modifier somme_ en séquentiel, pas de parallelisme.
+         
     } 
-    std::lock_guard<std::mutex> guard(m);
+    std::lock_guard<std::mutex> guard(m); //unique_lock fonctionne aussi.
     somme_ = somme_ +  var; //A la fin, on additionne les nombres stockés dans chaque var a somme_.
 }
 
