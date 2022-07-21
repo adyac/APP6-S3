@@ -19,7 +19,9 @@
 #define POTPIN          A5          // Port analogique pour le potentiometre
 
 #define PASPARTOUR      64          // Nombre de pas par tour du moteur
-#define RAPPORTVITESSE  50          // Rapport de vitesse du moteur
+#define RAPPORTVITESSE  34          // Rapport de vitesse du moteur
+
+#define RAYON           0.05        // Rayon de la roue en m
 
 /*---------------------------- Variables globales ---------------------------*/
 
@@ -44,6 +46,12 @@ float Axyz[3];                      // Tableau pour accelerometre
 float Gxyz[3];                      // Tableau pour giroscope
 float Mxyz[3];                      // Tableau pour magnetometre
 
+double time1 = 0;
+double pos1 = 0;
+double actualPos_ = 0;
+double actualCmd_ = 0;
+double actualVitesse_ = 0;
+
 /*------------------------- Prototypes de fonctions -------------------------*/
 
 void timerCallback();
@@ -62,6 +70,7 @@ void PIDgoalReached();
 
 void setup() {
   Serial.begin(BAUD);               // Initialisation de la communication serielle
+  Serial.println("my name is jeff");
   AX_.init();                       // Initialisation de la carte ArduinoX 
   imu_.init();                      // Initialisation de la centrale inertielle
   vexEncoder_.init(2,3);            // Initialisation de l'encodeur VEX
@@ -156,6 +165,9 @@ void sendMsg() {
   doc["gyroZ"] = imu_.getGyroZ();
   doc["isGoal"] = pid_.isAtGoal();
   doc["actualTime"] = pid_.getActualDt();
+  doc["cur_cmd"] = actualCmd_;
+  doc["cur_pos"] = actualPos_;
+  doc["cur_vel"] = actualVitesse_;
 
   // Serialisation
   serializeJson(doc, Serial);
@@ -209,11 +221,22 @@ void readMsg(){
 
 // Fonctions pour le PID
 double PIDmeasurement(){
-  // TODO
+  double pos2 = AX_.readEncoder(0);
+  double time2 = millis();
+  
+  actualVitesse_ = ((pos2 - pos1)/ ((time2 - time1) * PASPARTOUR * RAPPORTVITESSE)) * 2 * 3.141592 * RAYON * 1000;
+  actualPos_ = AX_.readEncoder(0)/(PASPARTOUR * RAPPORTVITESSE) * 2 * 3.141592 * RAYON;
+
+  pos1 = pos2;
+  time1 = time2;
+
+  return(actualVitesse_);
 }
 void PIDcommand(double cmd){
-  // TODO
+  AX_.setMotorPWM(0,cmd);
+  actualCmd_ = cmd;
 }
 void PIDgoalReached(){
-  // TODO
+  AX_.resetEncoder(0);
+  //AX_.setMotorPWM(0,0);
 }
